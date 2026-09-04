@@ -1,0 +1,315 @@
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: sk\n"
+"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
+
+#: lib/jurl_web/components/core_components.ex:482
+#: lib/jurl_web/live/dashboard_live.ex:104
+#, elixir-autogen, elixir-format
+msgid "Actions"
+msgstr "Akcie"
+
+#: lib/jurl_web/components/core_components.ex:160
+#, elixir-autogen, elixir-format
+msgid "Attempting to reconnect"
+msgstr "Pokus o opätovné pripojenie"
+
+#: lib/jurl_web/components/core_components.ex:151
+#, elixir-autogen, elixir-format
+msgid "Error!"
+msgstr "Chyba!"
+
+#: lib/jurl_web/components/core_components.ex:172
+#, elixir-autogen, elixir-format
+msgid "Hang in there while we get back on track"
+msgstr "Vydržte, kým sa vrátime na správnu cestu"
+
+#: lib/jurl_web/live/link_builder_live.ex:43
+#, elixir-autogen, elixir-format
+msgid "Long URL"
+msgstr "Dlhá URL"
+
+#: lib/jurl_web/live/link_builder_live.ex:68
+#, elixir-autogen, elixir-format
+msgid "Shorten URL"
+msgstr "Skrátiť URL"
+
+#: lib/jurl_web/live/link_builder_live.ex:31
+#, elixir-autogen, elixir-format
+msgid "Shorten your links"
+msgstr "Skráťte svoje odkazy"
+
+#: lib/jurl_web/components/core_components.ex:167
+#, elixir-autogen, elixir-format
+msgid "Something went wrong!"
+msgstr "Niečo sa pokazilo!"
+
+#: lib/jurl_web/components/core_components.ex:150
+#, elixir-autogen, elixir-format
+msgid "Success!"
+msgstr "Úspech!"
+
+#: lib/jurl_web/components/core_components.ex:155
+#, elixir-autogen, elixir-format
+msgid "We can't find the internet"
+msgstr "Nemôžeme nájsť internet"
+
+#: lib/jurl_web/components/core_components.ex:76
+#: lib/jurl_web/components/core_components.ex:130
+#, elixir-autogen, elixir-format
+msgid "close"
+msgstr "Zavrieť"
+
+#: lib/jurl_web/live/dashboard_live.ex:177
+#, elixir-autogen, elixir-format
+msgid "%{browser} on %{os}"
+msgstr "%{browser} na %{os}"
+
+#: lib/jurl_web/live/dashboard_live.ex:173
+#, elixir-autogen, elixir-format
+msgid "%{time} ago"
+msgstr "pred %{time}"
+
+#: lib/jurl_web/live/dashboard_live.ex:83
+#, elixir-autogen, elixir-format
+msgid "Active Visitors (5m)"
+msgstr "Aktívni návštevníci (5m)"
+
+#: lib/jurl_web/live/link_analytics_live.ex:43
+#, elixir-autogen, elixir-format
+msgid "Back to Dashboard"
+msgstr "Späť na Dashboard"
+
+#: lib/jurl_web/live/link_analytics_live.ex:135
+#, elixir-autogen, elixir-format
+msgid "Browsers"
+msgstr "Prehliadače"
+
+#: lib/jurl_web/live/dashboard_live.ex:165
+#, elixir-autogen, elixir-format
+msgid "Click on /%{code}"
+msgstr "Kliknite na /%{code}"
+
+#: lib/jurl_web/live/dashboard_live.ex:103
+#, elixir-autogen, elixir-format
+msgid "Clicks"
+msgstr "Kliknutia"
+
+#: lib/jurl_web/live/link_builder_live.ex:90
+#, elixir-autogen, elixir-format
+msgid "Copy"
+msgstr "Kopírovať"
+
+#: lib/jurl_web/live/link_analytics_live.ex:63
+#, elixir-autogen, elixir-format
+msgid "Created %{time} ago"
+msgstr "Vytvorené pred %{time}"
+
+#: lib/jurl_web/live/dashboard_live.ex:126
+#, elixir-autogen, elixir-format
+msgid "Details"
+msgstr "Podrobnosti"
+
+#: lib/jurl_web/live/link_analytics_live.ex:155
+#, elixir-autogen, elixir-format
+msgid "Devices"
+msgstr "Zariadenia"
+
+#: lib/jurl_web/live/link_analytics_live.ex:152
+#, elixir-autogen, elixir-format
+msgid "Devices & Operating Systems"
+msgstr "Zariadenia a operačné systémy"
+
+#: lib/jurl_web/live/link_analytics_live.ex:66
+#, elixir-autogen, elixir-format
+msgid "Expires: %{time}"
+msgstr "Vyprší: %{time}"
+
+#: lib/jurl_web/live/link_analytics_live.ex:118
+#, elixir-autogen, elixir-format
+msgid "Geographic Locations"
+msgstr "Geografické lokality"
+
+#: lib/jurl_web/live/dashboard_live.ex:144
+#, elixir-autogen, elixir-format
+msgid "Live Click Stream"
+msgstr "Živý prúd kliknutí"
+
+#: lib/jurl_web/live/dashboard_live.ex:53
+#, elixir-autogen, elixir-format
+msgid "Logged in as %{email} • Live stream enabled"
+msgstr "Prihlásený ako %{email} • Živé streamovanie povolené"
+
+#: lib/jurl_web/live/link_analytics_live.ex:137
+#, elixir-autogen, elixir-format
+msgid "No browser data yet."
+msgstr "Zatiaľ žiadne údaje prehliadača."
+
+#: lib/jurl_web/live/link_analytics_live.ex:157
+#: lib/jurl_web/live/link_analytics_live.ex:173
+#, elixir-autogen, elixir-format
+msgid "No data."
+msgstr "Žiadne údaje."
+
+#: lib/jurl_web/live/dashboard_live.ex:94
+#, elixir-autogen, elixir-format
+msgid "No links created yet."
+msgstr "Zatiaľ neboli vytvorené žiadne odkazy."
+
+#: lib/jurl_web/live/link_analytics_live.ex:120
+#, elixir-autogen, elixir-format
+msgid "No location data yet."
+msgstr "Zatiaľ žiadne údaje o polohe."
+
+#: lib/jurl_web/live/link_analytics_live.ex:103
+#, elixir-autogen, elixir-format
+msgid "No referrer data yet."
+msgstr "Zatiaľ žiadne údaje o sprostredkovateľovi."
+
+#: lib/jurl_web/live/link_analytics_live.ex:171
+#, elixir-autogen, elixir-format
+msgid "OS"
+msgstr "OS"
+
+#: lib/jurl_web/live/dashboard_live.ex:101
+#, elixir-autogen, elixir-format
+msgid "Original URL"
+msgstr "Pôvodná URL"
+
+#: lib/jurl_web/live/dashboard_live.ex:47
+#, elixir-autogen, elixir-format
+msgid "Real-time analytics"
+msgstr "Analytika v reálnom čase"
+
+#: lib/jurl_web/live/dashboard_live.ex:102
+#, elixir-autogen, elixir-format
+msgid "Short Code"
+msgstr "Krátky kód"
+
+#: lib/jurl_web/live/link_analytics_live.ex:57
+#, elixir-autogen, elixir-format
+msgid "Short URL:"
+msgstr "Krátka URL:"
+
+#: lib/jurl_web/live/dashboard_live.ex:62
+#, elixir-autogen, elixir-format
+msgid "Shorten New URL"
+msgstr "Skrátiť novú URL"
+
+#: lib/jurl_web/live/dashboard_live.ex:94
+#, elixir-autogen, elixir-format
+msgid "Shorten your first URL"
+msgstr "Skráťte svoju prvú URL"
+
+#: lib/jurl_web/live/link_builder_live.ex:149
+#, elixir-autogen, elixir-format
+msgid "Sign In"
+msgstr "Prihlásiť sa"
+
+#: lib/jurl_web/live/link_builder_live.ex:146
+#, elixir-autogen, elixir-format
+msgid "Sign Up Free"
+msgstr "Zaregistrovať sa zadarmo"
+
+#: lib/jurl_web/live/dashboard_live.ex:51
+#, elixir-autogen, elixir-format
+msgid "Temporary session links • Live stream enabled"
+msgstr "Dočasné odkazy relácie • Živý stream povolený"
+
+#: lib/jurl_web/live/dashboard_live.ex:77
+#: lib/jurl_web/live/link_analytics_live.ex:86
+#, elixir-autogen, elixir-format
+msgid "Total Clicks"
+msgstr "Celkové kliknutia"
+
+#: lib/jurl_web/live/dashboard_live.ex:71
+#, elixir-autogen, elixir-format
+msgid "Total Links"
+msgstr "Celkové odkazy"
+
+#: lib/jurl_web/live/link_analytics_live.ex:101
+#, elixir-autogen, elixir-format
+msgid "Traffic Sources"
+msgstr "Zdroje návštevnosti"
+
+#: lib/jurl_web/live/link_analytics_live.ex:92
+#, elixir-autogen, elixir-format
+msgid "Unique Visitors (IPs)"
+msgstr "Unikátni návštevníci (IP)"
+
+#: lib/jurl_web/live/link_builder_live.ex:142
+#, elixir-autogen, elixir-format
+msgid "Unlock More Features"
+msgstr "Odomknúť ďalšie funkcie"
+
+#: lib/jurl_web/live/link_builder_live.ex:105
+#, elixir-autogen, elixir-format
+msgid "View Analytics →"
+msgstr "Zobraziť analýzu →"
+
+#: lib/jurl_web/live/dashboard_live.ex:148
+#, elixir-autogen, elixir-format
+msgid "Waiting for clicks... share your links to watch live traffic stream in."
+msgstr "Čaká sa na kliknutia... zdieľajte svoje odkazy, aby ste mohli sledovať živý prúd návštevnosti."
+
+#: lib/jurl_web/live/link_builder_live.ex:114
+#, elixir-autogen, elixir-format
+msgid "Your Recent Links"
+msgstr "Vaše nedávne odkazy"
+
+#: lib/jurl_web/live/dashboard_live.ex:91
+#, elixir-autogen, elixir-format
+msgid "Your Shortened Links"
+msgstr "Vaše skrátené odkazy"
+
+#: lib/jurl_web/live/link_builder_live.ex:76
+#, elixir-autogen, elixir-format
+msgid "Your Shortened URL"
+msgstr "Vaša skrátená URL"
+
+#: lib/jurl_web/live/dashboard_live.ex:94
+#, elixir-autogen, elixir-format
+msgid "to see analytics."
+msgstr "aby ste videli analýzu."
+
+#: lib/jurl_web/controllers/print_html/show.html.heex:160
+#, elixir-autogen, elixir-format
+msgid "60 slips for link: %{url}"
+msgstr ""
+
+#: lib/jurl_web/live/link_builder_live.ex:34
+#, elixir-autogen, elixir-format
+msgid "A minimalist URL shortener."
+msgstr "Minimalistický skracovač URL."
+
+#: lib/jurl_web/controllers/print_html/show.html.heex:165
+#, elixir-autogen, elixir-format
+msgid "Back"
+msgstr ""
+
+#: lib/jurl_web/controllers/print_html/show.html.heex:168
+#: lib/jurl_web/live/dashboard_live.ex:123
+#: lib/jurl_web/live/link_analytics_live.ex:76
+#: lib/jurl_web/live/link_builder_live.ex:97
+#: lib/jurl_web/live/link_builder_live.ex:128
+#, elixir-autogen, elixir-format
+msgid "Print PDF"
+msgstr ""
+
+#: lib/jurl_web/controllers/print_html/show.html.heex:6
+#, elixir-autogen, elixir-format
+msgid "Print Slips"
+msgstr ""
+
+#: lib/jurl_web/controllers/print_html/show.html.heex:157
+#, elixir-autogen, elixir-format
+msgid "Print Slips Grid (20 × 3)"
+msgstr ""

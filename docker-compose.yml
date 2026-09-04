@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=jurl_dev
+    ports:
+      # Map to 5433 on the host to avoid conflict with the existing postgres running on host port 5432
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "4000:4000"
+    environment:
+      # Connect to the db service container using hostname 'db'
+      - DATABASE_URL=ecto://postgres:postgres@db/jurl_dev
+      - SECRET_KEY_BASE=super-secret-key-base-that-is-at-least-sixty-four-characters-long-1234567890
+      - PHX_HOST=localhost
+      - PORT=4000
+    depends_on:
+      - db
+    # Run ecto migrations first, then start the Phoenix web server
+    command: /bin/sh -c "/app/bin/migrate && /app/bin/server"
+
+volumes:
+  postgres_data:

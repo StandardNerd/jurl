@@ -1,0 +1,288 @@
+---
+- name: Provision Proxmox VE LXC Containers & Deploy Jurl Phoenix Stack
+  hosts: proxmox_hosts
+  gather_facts: false
+  vars_files:
+    - group_vars/all.yml
+
+  tasks:
+    - name: 1.1 Ensure Debian 12 LXC template is downloaded on Proxmox host
+      ansible.builtin.shell: |
+        pveam update
+        if ! pveam list local | grep -q "debian-12"; then
+          TEMPLATE_NAME=$(pveam available | grep "debian-12" | head -n1 | awk '{print $2}')
+          pveam download local "$TEMPLATE_NAME"
+        fi
+        DEBIAN_TMPL=$(pveam list local | grep "debian-12" | head -n1 | awk '{print $1}')
+        echo "FOUND_TEMPLATE=$DEBIAN_TMPL"
+      register: template_check
+      changed_when: false
+
+    - name: 1.2 Set resolved template variable
+      ansible.builtin.set_fact:
+        resolved_template: "{{ template_check.stdout | regex_search('FOUND_TEMPLATE=(.*)', '\\1') | first }}"
+
+    - name: 1.3 Debug resolved template
+      ansible.builtin.debug:
+        msg: "Using Debian LXC template: {{ resolved_template }}"
+
+    - name: 1.4 Check CT {{ postgres_vmid }} ({{ postgres_hostname }}) status
+      ansible.builtin.command: pct status {{ postgres_vmid }}
+      register: postgres_status
+      failed_when: false
+      changed_when: false
+
+    - name: 1.5 Create CT {{ postgres_vmid }} ({{ postgres_hostname }}) if not exists
+      ansible.builtin.command: >
+        pct create {{ postgres_vmid }} {{ resolved_template }}
+        --hostname {{ postgres_hostname }}
+        --cores {{ postgres_cores }}
+        --memory {{ postgres_ram }}
+        --swap 512
+        --net0 name=eth0,bridge={{ net_bridge }},ip={{ postgres_ip }}/{{ subnet_mask }},gw={{ gateway_ip }}
+        --storage {{ storage_pool }}
+        --rootfs {{ storage_pool }}:{{ postgres_disk }}
+        --unprivileged 1
+        --onboot 1
+      when: postgres_status.rc != 0
+
+    - name: 1.6 Start CT {{ postgres_vmid }} if not running
+      ansible.builtin.command: pct start {{ postgres_vmid }}
+      when: "postgres_status.rc != 0 or 'status: stopped' in postgres_status.stdout"
+
+    - name: 1.7 Check CT {{ app_vmid }} ({{ app_hostname }}) status
+      ansible.builtin.command: pct status {{ app_vmid }}
+      register: app_status
+      failed_when: false
+      changed_when: false
+
+    - name: 1.8 Create CT {{ app_vmid }} ({{ app_hostname }}) if not exists
+      ansible.builtin.command: >
+        pct create {{ app_vmid }} {{ resolved_template }}
+        --hostname {{ app_hostname }}
+        --cores {{ app_cores }}
+        --memory {{ app_ram }}
+        --swap 512
+        --net0 name=eth0,bridge={{ net_bridge }},ip={{ app_ip }}/{{ subnet_mask }},gw={{ gateway_ip }}
+        --storage {{ storage_pool }}
+        --rootfs {{ storage_pool }}:{{ app_disk }}
+        --unprivileged 1
+        --onboot 1
+      when: app_status.rc != 0
+
+    - name: 1.9 Start CT {{ app_vmid }} if not running
+      ansible.builtin.command: pct start {{ app_vmid }}
+      when: "app_status.rc != 0 or 'status: stopped' in app_status.stdout"
+
+    - name: 1.10 Wait for containers to initialize networking
+      ansible.builtin.pause:
+        seconds: 5
+
+    # -------------------------------------------------------------
+    # 2. PROXMOX CT POSTGRESQL DATABASE PROVISIONING
+    # -------------------------------------------------------------
+    - name: 2.1 Update apt packages inside CT {{ postgres_vmid }}
+      ansible.builtin.command: pct exec {{ postgres_vmid }} -- env DEBIAN_FRONTEND=noninteractive apt-get update
+
+    - name: 2.2 Install PostgreSQL 16, sudo & utilities inside CT {{ postgres_vmid }}
+      ansible.builtin.command: pct exec {{ postgres_vmid }} -- env DEBIAN_FRONTEND=noninteractive apt-get install -y postgresql postgresql-contrib sudo
+
+    - name: 2.3 Configure listen_addresses in postgresql.conf inside CT {{ postgres_vmid }}
+      ansible.builtin.command: >
+        pct exec {{ postgres_vmid }} -- bash -c "sed -i \"s/#listen_addresses = 'localhost'/listen_addresses = '*'/\" /etc/postgresql/*/main/postgresql.conf"
+
+    - name: 2.4 Configure pg_hba.conf for CT 101 remote access
+      ansible.builtin.command: >
+        pct exec {{ postgres_vmid }} -- bash -c "grep -q '{{ app_ip }}' /etc/postgresql/*/main/pg_hba.conf || echo 'host {{ db_name }} {{ db_user }} {{ app_ip }}/32 scram-sha-256' >> /etc/postgresql/*/main/pg_hba.conf"
+
+    - name: 2.5 Enable and restart PostgreSQL service in CT {{ postgres_vmid }}
+      ansible.builtin.command: pct exec {{ postgres_vmid }} -- systemctl restart postgresql
+
+    - name: 2.6 Create PostgreSQL User {{ db_user }} in CT {{ postgres_vmid }}
+      ansible.builtin.command: >
+        pct exec {{ postgres_vmid }} -- su - postgres -c "psql -c \"DO \$\$ BEGIN IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = '{{ db_user }}') THEN CREATE USER {{ db_user }} WITH PASSWORD '{{ db_password }}'; END IF; END \$\$;\""
+
+    - name: 2.7 Create Database {{ db_name }} owned by {{ db_user }}
+      ansible.builtin.command: >
+        pct exec {{ postgres_vmid }} -- su - postgres -c "psql -c \"SELECT 1 FROM pg_database WHERE datname = '{{ db_name }}';\""
+      register: db_check
+      changed_when: false
+
+    - name: 2.8 Execute Database creation if missing
+      ansible.builtin.command: >
+        pct exec {{ postgres_vmid }} -- su - postgres -c "psql -c \"CREATE DATABASE {{ db_name }} OWNER {{ db_user }};\""
+      when: "'1 row' not in db_check.stdout"
+
+    # -------------------------------------------------------------
+    # 3. PROXMOX CT 101: PHOENIX APP & RELEASE PROVISIONING
+    # -------------------------------------------------------------
+    - name: 3.1 Update apt packages inside CT {{ app_vmid }}
+      ansible.builtin.command: pct exec {{ app_vmid }} -- env DEBIAN_FRONTEND=noninteractive apt-get update
+
+    - name: 3.2 Install build tools, Elixir, Erlang headers, and Nginx inside CT {{ app_vmid }}
+      ansible.builtin.command: pct exec {{ app_vmid }} -- env DEBIAN_FRONTEND=noninteractive apt-get install -y git build-essential ca-certificates openssl libncurses5 nginx curl elixir erlang-dev erlang-xmerl python3 sudo
+
+    - name: 3.2b Ensure Elixir 1.15+ is installed inside CT {{ app_vmid }}
+      ansible.builtin.command: >
+        pct exec {{ app_vmid }} -- bash -c "if ! elixir --version | grep -q '1.15'; then curl -sSL -o /tmp/elixir.zip https://github.com/elixir-lang/elixir/releases/download/v1.15.7/elixir-otp-25.zip && python3 -m zipfile -e /tmp/elixir.zip /usr/local && chmod -R +x /usr/local/bin /usr/local/lib && ln -sf /usr/local/bin/elixir /usr/bin/elixir && ln -sf /usr/local/bin/elixirc /usr/bin/elixirc && ln -sf /usr/local/bin/iex /usr/bin/iex && ln -sf /usr/local/bin/mix /usr/bin/mix; fi"
+
+    - name: 3.3 Install Hex and Rebar for mix inside CT {{ app_vmid }}
+      ansible.builtin.command: >
+        pct exec {{ app_vmid }} -- bash -c "mix local.hex --force && mix local.rebar --force"
+
+    - name: 3.4 Copy project source code from control machine to Proxmox host
+      ansible.builtin.copy:
+        src: "../"
+        dest: "/tmp/jurl-src-host/"
+        mode: '0755'
+      tags: ['deploy', 'redeploy']
+
+    - name: 3.5 Create source archive on Proxmox host
+      ansible.builtin.command: >
+        tar -czf /tmp/jurl-src.tar.gz -C /tmp/jurl-src-host --exclude="_build" --exclude="deps" --exclude=".git" .
+      tags: ['deploy', 'redeploy']
+
+    - name: 3.6 Push source archive into CT {{ app_vmid }}
+      ansible.builtin.command: >
+        pct push {{ app_vmid }} /tmp/jurl-src.tar.gz /tmp/jurl-src.tar.gz
+      tags: ['deploy', 'redeploy']
+
+    - name: 3.7 Extract source code inside CT {{ app_vmid }}
+      ansible.builtin.command: >
+        pct exec {{ app_vmid }} -- bash -c "mkdir -p {{ app_source_dir }} && tar -xzf /tmp/jurl-src.tar.gz -C {{ app_source_dir }}"
+      tags: ['deploy', 'redeploy']
+
+    - name: 3.8 Fetch Mix dependencies in prod environment inside CT {{ app_vmid }}
+      ansible.builtin.command: >
+        pct exec {{ app_vmid }} -- bash -c "cd {{ app_source_dir }} && MIX_ENV=prod mix deps.get --only prod"
+      tags: ['deploy', 'redeploy']
+
+    - name: 3.9 Compile dependencies in prod environment inside CT {{ app_vmid }}
+      ansible.builtin.command: >
+        pct exec {{ app_vmid }} -- bash -c "cd {{ app_source_dir }} && MIX_ENV=prod mix deps.compile"
+      tags: ['deploy', 'redeploy']
+
+    - name: 3.10 Deploy and precompile static assets inside CT {{ app_vmid }}
+      ansible.builtin.command: >
+        pct exec {{ app_vmid }} -- bash -c "cd {{ app_source_dir }} && MIX_ENV=prod mix assets.deploy"
+      tags: ['deploy', 'redeploy']
+
+    - name: 3.11 Build Phoenix Release to {{ app_dir }} inside CT {{ app_vmid }}
+      ansible.builtin.command: >
+        pct exec {{ app_vmid }} -- bash -c "cd {{ app_source_dir }} && MIX_ENV=prod mix release --path {{ app_dir }} --overwrite"
+      tags: ['deploy', 'redeploy']
+
+    - name: 3.12 Create system user {{ app_user }} inside CT {{ app_vmid }}
+      ansible.builtin.command: >
+        pct exec {{ app_vmid }} -- bash -c "id -u {{ app_user }} &>/dev/null || useradd -r -s /bin/false {{ app_user }}"
+
+    - name: 3.13 Set ownership on release directory {{ app_dir }}
+      ansible.builtin.command: >
+        pct exec {{ app_vmid }} -- chown -R {{ app_user }}:{{ app_user }} {{ app_dir }}
+
+    - name: 3.14 Create Environment Directory /etc/jurl inside CT {{ app_vmid }}
+      ansible.builtin.command: >
+        pct exec {{ app_vmid }} -- mkdir -p /etc/jurl
+
+    - name: 3.15 Render Environment File {{ env_file_path }} inside CT {{ app_vmid }}
+      ansible.builtin.command: >
+        pct exec {{ app_vmid }} -- bash -c "cat << 'EOF' > {{ env_file_path }}
+        MIX_ENV=prod
+        PHX_SERVER=true
+        PORT={{ app_port }}
+        PHX_HOST={{ phx_host }}
+        DATABASE_URL=ecto://{{ db_user }}:{{ db_password }}@{{ postgres_ip }}:5432/{{ db_name }}
+        SECRET_KEY_BASE={{ secret_key_base }}
+        POOL_SIZE=10
+        EOF"
+
+    - name: 3.16 Secure Environment File permissions
+      ansible.builtin.command: >
+        pct exec {{ app_vmid }} -- bash -c "chown -R {{ app_user }}:{{ app_user }} /etc/jurl && chmod 600 {{ env_file_path }}"
+
+    - name: 3.17 Run Database Migrations via Phoenix Release Binary
+      ansible.builtin.command: >
+        pct exec {{ app_vmid }} -- bash -c "export \$(cat {{ env_file_path }} | xargs) && {{ app_dir }}/bin/migrate"
+      tags: ['deploy', 'redeploy']
+
+    - name: 3.18 Render Systemd Service Unit File inside CT {{ app_vmid }}
+      ansible.builtin.command: >
+        pct exec {{ app_vmid }} -- bash -c "cat << 'EOF' > /etc/systemd/system/jurl.service
+        [Unit]
+        Description=Jurl Phoenix Application Service
+        After=network.target
+
+        [Service]
+        Type=exec
+        User={{ app_user }}
+        Group={{ app_user }}
+        WorkingDirectory={{ app_dir }}
+        EnvironmentFile={{ env_file_path }}
+        ExecStart={{ app_dir }}/bin/server
+        Restart=always
+        RestartSec=5
+        LimitNOFILE=65536
+
+        [Install]
+        WantedBy=multi-user.target
+        EOF"
+
+    - name: 3.19 Enable and start jurl.service inside CT {{ app_vmid }}
+      ansible.builtin.command: >
+        pct exec {{ app_vmid }} -- bash -c "systemctl daemon-reload && systemctl restart jurl"
+      tags: ['deploy', 'redeploy']
+
+    # -------------------------------------------------------------
+    # 4. NGINX REVERSE PROXY & WEBSOCKET SETUP
+    # -------------------------------------------------------------
+    - name: 4.1 Render Nginx Site Configuration inside CT {{ app_vmid }}
+      ansible.builtin.command: >
+        pct exec {{ app_vmid }} -- bash -c "cat << 'EOF' > /etc/nginx/sites-available/jurl
+        map \$http_upgrade \$connection_upgrade {
+            default upgrade;
+            ''      close;
+        }
+
+        server {
+            listen 80;
+            server_name {{ phx_host }};
+
+            location / {
+                proxy_pass http://127.0.0.1:{{ app_port }};
+                proxy_http_version 1.1;
+                proxy_set_header Host \$host;
+                proxy_set_header X-Real-IP \$remote_addr;
+                proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto \$scheme;
+            }
+
+            location /live/websocket {
+                proxy_pass http://127.0.0.1:{{ app_port }};
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade \$http_upgrade;
+                proxy_set_header Connection \$connection_upgrade;
+                proxy_set_header Host \$host;
+                proxy_set_header X-Real-IP \$remote_addr;
+                proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+                proxy_read_timeout 86400s;
+                proxy_send_timeout 86400s;
+            }
+        }
+        EOF"
+
+    - name: 4.2 Enable Nginx Site and Reload Service inside CT {{ app_vmid }}
+      ansible.builtin.command: >
+        pct exec {{ app_vmid }} -- bash -c "ln -sf /etc/nginx/sites-available/jurl /etc/nginx/sites-enabled/default && nginx -t && systemctl reload nginx"
+
+    - name: 4.3 Output Deployment Summary
+      ansible.builtin.debug:
+        msg:
+          - "========================================================="
+          - " JURL DEPLOYMENT COMPLETED SUCCESSFULLY!"
+          - "========================================================="
+          - " Proxmox Host : {{ proxmox_ip }}"
+          - " PostgreSQL CT: {{ postgres_vmid }} ({{ postgres_ip }}:5432)"
+          - " Phoenix App CT: {{ app_vmid }} (http://{{ app_ip }})"
+          - " Database Name : {{ db_name }}"
+          - " Service Name  : jurl.service"
+          - "========================================================="

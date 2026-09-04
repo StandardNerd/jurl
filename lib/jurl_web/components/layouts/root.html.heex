@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<% locale = assigns[:locale] || "en" %>
+<html lang={locale} dir={if locale == "ar", do: "rtl", else: "ltr"} class="[scrollbar-gutter:stable]">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="csrf-token" content={get_csrf_token()} />
+    <.live_title default="Jurl" suffix=" · URL shortener">
+      {assigns[:page_title]}
+    </.live_title>
+    <meta name="description" content={assigns[:page_description] || "Create short, trackable links instantly with Jurl."} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Jurl" />
+    <meta property="og:title" content={if assigns[:page_title], do: "#{assigns[:page_title]} · URL shortener", else: "Jurl · URL shortener"} />
+    <meta property="og:description" content={assigns[:page_description] || "Create short, trackable links instantly with Jurl."} />
+    <link phx-track-static rel="stylesheet" href={~p"/assets/app.css"} />
+    <script defer phx-track-static type="text/javascript" src={~p"/assets/app.js"}>
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  </head>
+  <body class="bg-base text-ink font-sans antialiased pb-12">
+    <ul class="relative z-10 flex items-center gap-4 px-4 sm:px-6 lg:px-8 justify-end pt-4 font-medium text-xs">
+      <%= if assigns[:current_user] do %>
+        <li class="text-xs leading-5 text-zinc-600">
+          <%= @current_user.email %>
+        </li>
+        <li>
+          <.link
+            href={~p"/users/settings"}
+            class="text-xs leading-5 text-zinc-900 font-semibold hover:text-zinc-700"
+          >
+            Settings
+          </.link>
+        </li>
+        <li>
+          <.link
+            href={~p"/users/log_out"}
+            method="delete"
+            class="text-xs leading-5 text-zinc-900 font-semibold hover:text-zinc-700"
+          >
+            Log out
+          </.link>
+        </li>
+      <% end %>
+      <li>
+        <form id="locale-form" method="GET" action="/">
+          <select name="locale" onchange="this.form.submit()" class="text-xs bg-base border-line rounded-md text-ink py-1 pl-2 pr-6">
+            <option value="en" selected={@locale == "en"}>English</option>
+            <option value="de" selected={@locale == "de"}>Deutsch</option>
+            <option value="fr" selected={@locale == "fr"}>Français</option>
+            <option value="it" selected={@locale == "it"}>Italiano</option>
+            <option value="es" selected={@locale == "es"}>Español</option>
+            <option value="ar" selected={@locale == "ar"}>العربية</option>
+            <option value="ko" selected={@locale == "ko"}>한국어</option>
+            <option value="sk" selected={@locale == "sk"}>Slovenčina</option>
+            <option value="pl" selected={@locale == "pl"}>Polski</option>
+            <option value="hu" selected={@locale == "hu"}>Magyar</option>
+            <option value="el" selected={@locale == "el"}>Ελληνικά</option>
+            <option value="tr" selected={@locale == "tr"}>Türkçe</option>
+            <option value="pt" selected={@locale == "pt"}>Português</option>
+          </select>
+        </form>
+      </li>
+    </ul>
+    {@inner_content}
+    <footer class="fixed bottom-0 inset-x-0 bg-base/90 backdrop-blur-sm border-t border-line py-2.5 text-center text-xs text-faded z-50">
+      Made by <a href="mailto:joon.ch@gmail.com" class="text-ink font-medium hover:underline">Joon-Ki Choi</a>
+    </footer>
+  </body>
+</html>

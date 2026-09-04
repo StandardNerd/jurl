@@ -1,0 +1,45 @@
+---
+# Infrastructure Parameters
+proxmox_ip: "192.168.1.19"
+net_bridge: "vmbr0"
+subnet_mask: "24"
+gateway_ip: "192.168.1.1"
+storage_pool: "local-lvm"
+template_name: "local:vztmpl/debian-12-standard_12.2-1_amd64.tar.zst"
+
+# PostgreSQL LXC (CT 102)
+postgres_vmid: 102
+postgres_hostname: "postgres-db"
+postgres_ip: "192.168.1.20"
+postgres_ram: 4096
+postgres_cores: 2
+postgres_disk: "10"
+
+# Phoenix App LXC (CT 101)
+app_vmid: 101
+app_hostname: "phoenix-app"
+app_ip: "192.168.1.21"
+app_ram: 4096
+app_cores: 2
+app_disk: "20"
+
+# Database & Application Secrets
+db_name: "jurl_prod"
+db_user: "jurl"
+db_password: "{{ vault_db_password | default('jurl_prod_secret_pass_2026') }}"
+secret_key_base: "{{ vault_secret_key_base | default('6b177894a896d74ee51121d582b13c72b22579b940026e63eb8c3938562d9804e76a06652b0475253e7f4c0a59a930773d5733e8b0b9a89c7d4e5f6g7h8i9j0k') }}"
+
+# Phoenix Application Settings
+app_name: "jurl"
+app_port: 4000
+phx_host: "jurl.ch"
+app_user: "phoenix"
+app_dir: "/opt/jurl"
+env_file_path: "/etc/jurl/jurl.env"
+app_source_dir: "/tmp/jurl-build"
+
+# Matches the :app atom in your mix.exs (the release binary name)
+app_bin_name: jurl
+
+# Absolute path to the source tree on the Proxmox host
+app_local_path: "{{ playbook_dir }}/.."

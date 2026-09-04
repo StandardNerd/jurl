@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title><%= gettext("Print Slips") %> - <%= @short_code %></title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        --font-sans: 'Inter', system-ui, sans-serif;
+        --font-serif: 'Instrument Serif', Georgia, serif;
+        --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: var(--font-sans);
+        background-color: #f8f7f4;
+        color: #27272a;
+        padding: 20px;
+        -webkit-font-smoothing: antialiased;
+      }
+      .no-print-bar {
+        max-width: 210mm;
+        margin: 0 auto 20px auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: #ffffff;
+        border: 1px solid rgba(39,39,42,0.12);
+        padding: 12px 20px;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      }
+      .btn {
+        font-family: var(--font-sans);
+        font-weight: 700;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 8px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: background-color 0.2s;
+      }
+      .btn-primary {
+        background-color: #27272a;
+        color: #f8f7f4;
+        border: none;
+      }
+      .btn-primary:hover {
+        background-color: #5a2d10;
+      }
+      .btn-secondary {
+        background-color: transparent;
+        color: #27272a;
+        border: 1px solid rgba(39,39,42,0.2);
+      }
+      .btn-secondary:hover {
+        background-color: #f1efea;
+      }
+
+      /* Print sheet styling */
+      .print-sheet {
+        width: 195mm;
+        margin: 0 auto;
+        background-color: #ffffff;
+        border: 1px solid rgba(39,39,42,0.15);
+        padding: 4mm;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      }
+
+      .grid-container {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(20, 1fr);
+        gap: 0;
+        width: 100%;
+        height: 275mm;
+      }
+
+      .slip {
+        border: 1px dashed #a1a1aa;
+        padding: 2px 8px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        overflow: hidden;
+        box-sizing: border-box;
+        background: #ffffff;
+      }
+
+      .slip-brand {
+        font-family: var(--font-serif);
+        font-size: 13px;
+        font-weight: 700;
+        color: #5a2d10;
+        letter-spacing: -0.02em;
+        flex-shrink: 0;
+        margin-right: 6px;
+      }
+
+      .slip-url {
+        font-family: var(--font-mono);
+        font-size: 10.5px;
+        font-weight: 600;
+        color: #27272a;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      @media print {
+        @page {
+          size: A4 portrait;
+          margin: 8mm;
+        }
+        body {
+          background-color: #ffffff !important;
+          padding: 0 !important;
+          margin: 0 !important;
+        }
+        .no-print-bar, footer {
+          display: none !important;
+        }
+        .print-sheet {
+          width: 100% !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          border: none !important;
+          box-shadow: none !important;
+        }
+        .grid-container {
+          height: 277mm !important;
+        }
+        .slip {
+          border: 1px dashed #71717a !important;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="no-print-bar">
+      <div>
+        <h2 style="font-family: var(--font-serif); font-size: 20px; color: #27272a; font-weight: 700;">
+          <%= gettext("Print Slips Grid (20 × 3)") %>
+        </h2>
+        <p style="font-size: 12px; color: #71717a; margin-top: 2px;">
+          <%= gettext("60 slips for link: %{url}", url: @short_url) %>
+        </p>
+      </div>
+      <div style="display: flex; gap: 10px;">
+        <a href="javascript:history.back()" class="btn btn-secondary">
+          ← <%= gettext("Back") %>
+        </a>
+        <button onclick="window.print()" class="btn btn-primary">
+          🖨 <%= gettext("Print PDF") %>
+        </button>
+      </div>
+    </div>
+
+    <div class="print-sheet">
+      <div class="grid-container">
+        <%= for _i <- 1..60 do %>
+          <div class="slip">
+            <span class="slip-brand">JURL.</span>
+            <span class="slip-url"><%= @short_url %></span>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <script>
+      window.addEventListener("DOMContentLoaded", () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get("auto") === "true") {
+          setTimeout(() => window.print(), 300);
+        }
+      });
+    </script>
+  </body>
+</html>

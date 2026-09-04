@@ -1,0 +1,174 @@
+# deploy jurl to lxc 101:
+# ansible-playbook ./ansible/deploy_lxc101.yml -i ansible/inventory.ini
+---
+- name: Deploy JURL Code to Proxmox LXC Container ID 101
+  hosts: proxmox_hosts
+  gather_facts: false
+  vars:
+    lxc_id: 101
+    build_dir: "/tmp/jurl-build"
+    app_dir: "/opt/jurl"
+    app_user: "phoenix"
+    env_file: "/etc/jurl/jurl.env"
+    db_host: "192.168.1.20"
+    db_user: "jurl"
+    db_pass: "jurl_prod_secret_pass_2026"
+    app_ip: "192.168.1.21"
+    app_port: 4000
+    project_root: "{{ playbook_dir }}/.."
+
+  tasks:
+    # -------------------------------------------------------------
+    # 1. VERIFY LXC CONTAINER STATUS
+    # -------------------------------------------------------------
+    - name: 1a. Verify LXC Container {{ lxc_id }} status on Proxmox host
+      ansible.builtin.command: pct status {{ lxc_id }}
+      register: lxc_status
+      changed_when: false
+      failed_when: false
+
+    - name: 1b. Fail if LXC container {{ lxc_id }} does not exist
+      ansible.builtin.fail:
+        msg: "LXC container {{ lxc_id }} was not found on Proxmox host {{ inventory_hostname }}."
+      when: lxc_status.rc != 0
+
+    - name: 1c. Start LXC container {{ lxc_id }} if stopped
+      ansible.builtin.command: pct start {{ lxc_id }}
+      when: "lxc_status.rc == 0 and 'status: stopped' in lxc_status.stdout"
+
+    # -------------------------------------------------------------
+    # 2. LOCAL ASSET DIRECTORY VERIFICATION
+    # -------------------------------------------------------------
+    - name: 2. Ensure static SVG logo directory exists locally
+      delegate_to: localhost
+      become: false
+      ansible.builtin.file:
+        path: "{{ project_root }}/priv/static/images"
+        state: directory
+        mode: '0755'
+
+    # -------------------------------------------------------------
+    # 3. CODEBASE TRANSFER TO LXC CONTAINER
+    # -------------------------------------------------------------
+    - name: 3. Prepare build directory inside LXC {{ lxc_id }}
+      ansible.builtin.command: >
+        pct exec {{ lxc_id }} -- bash -c "rm -rf {{ build_dir }} && mkdir -p {{ build_dir }}"
+      changed_when: true
+
+    - name: 4a. Create codebase tarball on local control machine
+      delegate_to: localhost
+      become: false
+      ansible.builtin.shell: >
+        tar --exclude='_build' --exclude='deps' --exclude='.git' --exclude='node_modules' --exclude='.elixir_ls'
+        -czf /tmp/jurl_deploy.tar.gz -C {{ project_root }} .
+      changed_when: true
+
+    - name: 4b. Transfer tarball to Proxmox host
+      ansible.builtin.copy:
+        src: /tmp/jurl_deploy.tar.gz
+        dest: /tmp/jurl_deploy.tar.gz
+        mode: '0644'
+
+    - name: 4c. Push tarball into LXC {{ lxc_id }}
+      ansible.builtin.command: pct push {{ lxc_id }} /tmp/jurl_deploy.tar.gz /tmp/jurl_deploy.tar.gz
+      changed_when: true
+
+    - name: 4d. Extract codebase inside LXC {{ lxc_id }}
+      ansible.builtin.command: >
+        pct exec {{ lxc_id }} -- bash -c "tar -xzf /tmp/jurl_deploy.tar.gz -C {{ build_dir }} && rm -f /tmp/jurl_deploy.tar.gz"
+      changed_when: true
+
+    - name: 4e. Clean up temporary tarball on Proxmox host
+      ansible.builtin.file:
+        path: /tmp/jurl_deploy.tar.gz
+        state: absent
+
+    - name: 4f. Clean up temporary tarball on local control machine
+      delegate_to: localhost
+      become: false
+      ansible.builtin.file:
+        path: /tmp/jurl_deploy.tar.gz
+        state: absent
+
+    - name: 5. Set directory ownership to {{ app_user }} inside LXC {{ lxc_id }}
+      ansible.builtin.command: pct exec {{ lxc_id }} -- chown -R {{ app_user }}:{{ app_user }} {{ build_dir }}
+      changed_when: true
+
+    # -------------------------------------------------------------
+    # 4. BUILD & VERIFICATION INSIDE LXC CONTAINER
+    # -------------------------------------------------------------
+    - name: 6. Run mix precommit verification inside LXC {{ lxc_id }}
+      ansible.builtin.command: >
+        pct exec {{ lxc_id }} -- bash -c "export LANG=C.UTF-8 LC_ALL=C.UTF-8 ELIXIR_ERL_OPTIONS=\"+fnu\" && cd {{ build_dir }} && POSTGRES_HOST={{ db_host }} POSTGRES_USER={{ db_user }} POSTGRES_PASSWORD={{ db_pass }} MIX_ENV=test mix deps.get && POSTGRES_HOST={{ db_host }} POSTGRES_USER={{ db_user }} POSTGRES_PASSWORD={{ db_pass }} MIX_ENV=test mix precommit"
+      changed_when: false
+
+    - name: 7. Stop jurl systemd service before release build
+      ansible.builtin.command: pct exec {{ lxc_id }} -- systemctl stop jurl
+      failed_when: false
+      changed_when: true
+
+    - name: 8. Fetch mix dependencies inside LXC {{ lxc_id }}
+      ansible.builtin.command: >
+        pct exec {{ lxc_id }} -- bash -c "set -a && source {{ env_file }} && set +a && cd {{ build_dir }} && MIX_ENV=prod mix deps.get"
+      changed_when: true
+
+    - name: 9. Run database migrations inside LXC {{ lxc_id }}
+      ansible.builtin.command: >
+        pct exec {{ lxc_id }} -- bash -c "set -a && source {{ env_file }} && set +a && cd {{ build_dir }} && MIX_ENV=prod mix ecto.migrate"
+      changed_when: true
+
+    - name: 10. Compile assets and deploy static assets inside LXC {{ lxc_id }}
+      ansible.builtin.command: >
+        pct exec {{ lxc_id }} -- bash -c "set -a && source {{ env_file }} && set +a && cd {{ build_dir }} && MIX_ENV=prod mix compile && MIX_ENV=prod mix assets.setup && MIX_ENV=prod mix assets.deploy"
+      changed_when: true
+
+    - name: 11. Generate production OTP Release into {{ app_dir }} inside LXC {{ lxc_id }}
+      ansible.builtin.command: >
+        pct exec {{ lxc_id }} -- bash -c "set -a && source {{ env_file }} && set +a && cd {{ build_dir }} && MIX_ENV=prod mix release --path {{ app_dir }} --overwrite"
+      changed_when: true
+
+    - name: 12. Fix ownership permissions for {{ app_user }}
+      ansible.builtin.command: pct exec {{ lxc_id }} -- chown -R {{ app_user }}:{{ app_user }} {{ app_dir }}
+      changed_when: true
+
+    - name: 13. Start jurl systemd service inside LXC {{ lxc_id }}
+      ansible.builtin.command: pct exec {{ lxc_id }} -- systemctl start jurl
+      changed_when: true
+
+    - name: 14. Wait for service to initialize
+      ansible.builtin.pause:
+        seconds: 3
+
+    - name: 15. Verify HTTP service endpoint
+      ansible.builtin.uri:
+        url: "http://{{ app_ip }}:{{ app_port }}"
+        status_code:
+          - 200
+          - 302
+      register: http_check
+      retries: 10
+      delay: 2
+      until: http_check.status in [200, 302]
+
+    - name: 15b. Verify logo SVG endpoint
+      ansible.builtin.uri:
+        url: "http://{{ app_ip }}:{{ app_port }}/images/kolibri-logo.svg"
+        status_code: [200, 404]
+      register: logo_check
+      failed_when: false
+
+    - name: 16. Display deployment summary
+      ansible.builtin.debug:
+        msg:
+          - "========================================================="
+          - "JURL DEPLOYMENT TO LXC {{ lxc_id }} SUCCESSFUL"
+          - "========================================================="
+          - " Target LXC Container ID : {{ lxc_id }}"
+          - " Proxmox Host            : {{ inventory_hostname }} ({{ ansible_host }})"
+          - " Application Directory  : {{ app_dir }}"
+          - " Application Endpoint   : http://{{ app_ip }}:{{ app_port }}"
+          - " Logo Image Endpoint     : http://{{ app_ip }}:{{ app_port }}/images/kolibri-logo.svg"
+          - " HTTP Check Status       : {{ http_check.status }}"
+          - " Logo Check Status       : {{ logo_check.status }}"
+          - " Systemd Service Status  : Active (Running)"
+          - "========================================================="

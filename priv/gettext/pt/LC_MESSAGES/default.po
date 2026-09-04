@@ -1,0 +1,315 @@
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: pt\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: lib/jurl_web/components/core_components.ex:482
+#: lib/jurl_web/live/dashboard_live.ex:104
+#, elixir-autogen, elixir-format
+msgid "Actions"
+msgstr "Ações"
+
+#: lib/jurl_web/components/core_components.ex:160
+#, elixir-autogen, elixir-format
+msgid "Attempting to reconnect"
+msgstr "Tentando reconectar"
+
+#: lib/jurl_web/components/core_components.ex:151
+#, elixir-autogen, elixir-format
+msgid "Error!"
+msgstr "Erro!"
+
+#: lib/jurl_web/components/core_components.ex:172
+#, elixir-autogen, elixir-format
+msgid "Hang in there while we get back on track"
+msgstr "Aguarde enquanto voltamos aos trilhos"
+
+#: lib/jurl_web/live/link_builder_live.ex:43
+#, elixir-autogen, elixir-format
+msgid "Long URL"
+msgstr "URL longo"
+
+#: lib/jurl_web/live/link_builder_live.ex:68
+#, elixir-autogen, elixir-format
+msgid "Shorten URL"
+msgstr "Encurtar URL"
+
+#: lib/jurl_web/live/link_builder_live.ex:31
+#, elixir-autogen, elixir-format
+msgid "Shorten your links"
+msgstr "Encurte seus links"
+
+#: lib/jurl_web/components/core_components.ex:167
+#, elixir-autogen, elixir-format
+msgid "Something went wrong!"
+msgstr "Algo deu errado!"
+
+#: lib/jurl_web/components/core_components.ex:150
+#, elixir-autogen, elixir-format
+msgid "Success!"
+msgstr "Sucesso!"
+
+#: lib/jurl_web/components/core_components.ex:155
+#, elixir-autogen, elixir-format
+msgid "We can't find the internet"
+msgstr "Não conseguimos encontrar a internet"
+
+#: lib/jurl_web/components/core_components.ex:76
+#: lib/jurl_web/components/core_components.ex:130
+#, elixir-autogen, elixir-format
+msgid "close"
+msgstr "fechar"
+
+#: lib/jurl_web/live/dashboard_live.ex:177
+#, elixir-autogen, elixir-format
+msgid "%{browser} on %{os}"
+msgstr "%{browser} no %{os}"
+
+#: lib/jurl_web/live/dashboard_live.ex:173
+#, elixir-autogen, elixir-format
+msgid "%{time} ago"
+msgstr "há %{time}"
+
+#: lib/jurl_web/live/dashboard_live.ex:83
+#, elixir-autogen, elixir-format
+msgid "Active Visitors (5m)"
+msgstr "Visitantes Ativos (5m)"
+
+#: lib/jurl_web/live/link_analytics_live.ex:43
+#, elixir-autogen, elixir-format
+msgid "Back to Dashboard"
+msgstr "Voltar ao Dashboard"
+
+#: lib/jurl_web/live/link_analytics_live.ex:135
+#, elixir-autogen, elixir-format
+msgid "Browsers"
+msgstr "Navegadores"
+
+#: lib/jurl_web/live/dashboard_live.ex:165
+#, elixir-autogen, elixir-format
+msgid "Click on /%{code}"
+msgstr "Clique em /%{code}"
+
+#: lib/jurl_web/live/dashboard_live.ex:103
+#, elixir-autogen, elixir-format
+msgid "Clicks"
+msgstr "Cliques"
+
+#: lib/jurl_web/live/link_builder_live.ex:90
+#, elixir-autogen, elixir-format
+msgid "Copy"
+msgstr "Copiar"
+
+#: lib/jurl_web/live/link_analytics_live.ex:63
+#, elixir-autogen, elixir-format
+msgid "Created %{time} ago"
+msgstr "Criado há %{time}"
+
+#: lib/jurl_web/live/dashboard_live.ex:126
+#, elixir-autogen, elixir-format
+msgid "Details"
+msgstr "Detalhes"
+
+#: lib/jurl_web/live/link_analytics_live.ex:155
+#, elixir-autogen, elixir-format
+msgid "Devices"
+msgstr "Dispositivos"
+
+#: lib/jurl_web/live/link_analytics_live.ex:152
+#, elixir-autogen, elixir-format
+msgid "Devices & Operating Systems"
+msgstr "Dispositivos e Sistemas Operacionais"
+
+#: lib/jurl_web/live/link_analytics_live.ex:66
+#, elixir-autogen, elixir-format
+msgid "Expires: %{time}"
+msgstr "Expira: %{time}"
+
+#: lib/jurl_web/live/link_analytics_live.ex:118
+#, elixir-autogen, elixir-format
+msgid "Geographic Locations"
+msgstr "Localizações Geográficas"
+
+#: lib/jurl_web/live/dashboard_live.ex:144
+#, elixir-autogen, elixir-format
+msgid "Live Click Stream"
+msgstr "Fluxo de Cliques ao Vivo"
+
+#: lib/jurl_web/live/dashboard_live.ex:53
+#, elixir-autogen, elixir-format
+msgid "Logged in as %{email} • Live stream enabled"
+msgstr "Logado como %{email} • Fluxo ao vivo ativado"
+
+#: lib/jurl_web/live/link_analytics_live.ex:137
+#, elixir-autogen, elixir-format
+msgid "No browser data yet."
+msgstr "Sem dados de navegador ainda."
+
+#: lib/jurl_web/live/link_analytics_live.ex:157
+#: lib/jurl_web/live/link_analytics_live.ex:173
+#, elixir-autogen, elixir-format
+msgid "No data."
+msgstr "Sem dados."
+
+#: lib/jurl_web/live/dashboard_live.ex:94
+#, elixir-autogen, elixir-format
+msgid "No links created yet."
+msgstr "Nenhum link criado ainda."
+
+#: lib/jurl_web/live/link_analytics_live.ex:120
+#, elixir-autogen, elixir-format
+msgid "No location data yet."
+msgstr "Sem dados de localização ainda."
+
+#: lib/jurl_web/live/link_analytics_live.ex:103
+#, elixir-autogen, elixir-format
+msgid "No referrer data yet."
+msgstr "Sem dados de referência ainda."
+
+#: lib/jurl_web/live/link_analytics_live.ex:171
+#, elixir-autogen, elixir-format
+msgid "OS"
+msgstr "SO"
+
+#: lib/jurl_web/live/dashboard_live.ex:101
+#, elixir-autogen, elixir-format
+msgid "Original URL"
+msgstr "URL Original"
+
+#: lib/jurl_web/live/dashboard_live.ex:47
+#, elixir-autogen, elixir-format
+msgid "Real-time analytics"
+msgstr "Análises em tempo real"
+
+#: lib/jurl_web/live/dashboard_live.ex:102
+#, elixir-autogen, elixir-format
+msgid "Short Code"
+msgstr "Código Curto"
+
+#: lib/jurl_web/live/link_analytics_live.ex:57
+#, elixir-autogen, elixir-format
+msgid "Short URL:"
+msgstr "URL Curto:"
+
+#: lib/jurl_web/live/dashboard_live.ex:62
+#, elixir-autogen, elixir-format
+msgid "Shorten New URL"
+msgstr "Encurtar Novo URL"
+
+#: lib/jurl_web/live/dashboard_live.ex:94
+#, elixir-autogen, elixir-format
+msgid "Shorten your first URL"
+msgstr "Encurte seu primeiro URL"
+
+#: lib/jurl_web/live/link_builder_live.ex:149
+#, elixir-autogen, elixir-format
+msgid "Sign In"
+msgstr "Entrar"
+
+#: lib/jurl_web/live/link_builder_live.ex:146
+#, elixir-autogen, elixir-format
+msgid "Sign Up Free"
+msgstr "Inscreva-se Grátis"
+
+#: lib/jurl_web/live/dashboard_live.ex:51
+#, elixir-autogen, elixir-format
+msgid "Temporary session links • Live stream enabled"
+msgstr "Links de sessão temporária • Fluxo ao vivo ativado"
+
+#: lib/jurl_web/live/dashboard_live.ex:77
+#: lib/jurl_web/live/link_analytics_live.ex:86
+#, elixir-autogen, elixir-format
+msgid "Total Clicks"
+msgstr "Total de Cliques"
+
+#: lib/jurl_web/live/dashboard_live.ex:71
+#, elixir-autogen, elixir-format
+msgid "Total Links"
+msgstr "Total de Links"
+
+#: lib/jurl_web/live/link_analytics_live.ex:101
+#, elixir-autogen, elixir-format
+msgid "Traffic Sources"
+msgstr "Fontes de Tráfego"
+
+#: lib/jurl_web/live/link_analytics_live.ex:92
+#, elixir-autogen, elixir-format
+msgid "Unique Visitors (IPs)"
+msgstr "Visitantes Únicos (IPs)"
+
+#: lib/jurl_web/live/link_builder_live.ex:142
+#, elixir-autogen, elixir-format
+msgid "Unlock More Features"
+msgstr "Desbloquear Mais Recursos"
+
+#: lib/jurl_web/live/link_builder_live.ex:105
+#, elixir-autogen, elixir-format
+msgid "View Analytics →"
+msgstr "Ver Análises →"
+
+#: lib/jurl_web/live/dashboard_live.ex:148
+#, elixir-autogen, elixir-format
+msgid "Waiting for clicks... share your links to watch live traffic stream in."
+msgstr "Aguardando cliques... compartilhe seus links para assistir ao fluxo de tráfego ao vivo."
+
+#: lib/jurl_web/live/link_builder_live.ex:114
+#, elixir-autogen, elixir-format
+msgid "Your Recent Links"
+msgstr "Seus Links Recentes"
+
+#: lib/jurl_web/live/dashboard_live.ex:91
+#, elixir-autogen, elixir-format
+msgid "Your Shortened Links"
+msgstr "Seus Links Encurtados"
+
+#: lib/jurl_web/live/link_builder_live.ex:76
+#, elixir-autogen, elixir-format
+msgid "Your Shortened URL"
+msgstr "Seu URL Encurtado"
+
+#: lib/jurl_web/live/dashboard_live.ex:94
+#, elixir-autogen, elixir-format
+msgid "to see analytics."
+msgstr "para ver análises."
+
+#: lib/jurl_web/controllers/print_html/show.html.heex:160
+#, elixir-autogen, elixir-format
+msgid "60 slips for link: %{url}"
+msgstr ""
+
+#: lib/jurl_web/live/link_builder_live.ex:34
+#, elixir-autogen, elixir-format
+msgid "A minimalist URL shortener."
+msgstr "Um encurtador de URL minimalista."
+
+#: lib/jurl_web/controllers/print_html/show.html.heex:165
+#, elixir-autogen, elixir-format
+msgid "Back"
+msgstr ""
+
+#: lib/jurl_web/controllers/print_html/show.html.heex:168
+#: lib/jurl_web/live/dashboard_live.ex:123
+#: lib/jurl_web/live/link_analytics_live.ex:76
+#: lib/jurl_web/live/link_builder_live.ex:97
+#: lib/jurl_web/live/link_builder_live.ex:128
+#, elixir-autogen, elixir-format
+msgid "Print PDF"
+msgstr ""
+
+#: lib/jurl_web/controllers/print_html/show.html.heex:6
+#, elixir-autogen, elixir-format
+msgid "Print Slips"
+msgstr ""
+
+#: lib/jurl_web/controllers/print_html/show.html.heex:157
+#, elixir-autogen, elixir-format
+msgid "Print Slips Grid (20 × 3)"
+msgstr ""
