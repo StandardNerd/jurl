@@ -1,5 +1,8 @@
 # jurl
 
+![screenshot](./docs/image.png)
+
+
 <p align="center">
   <strong>High-performance, real-time, privacy-friendly URL shortener built with Elixir and Phoenix LiveView.</strong>
 </p>
