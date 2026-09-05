@@ -26,8 +26,8 @@ app_disk: "20"
 # Database & Application Secrets
 db_name: "jurl_prod"
 db_user: "jurl"
-db_password: "{{ vault_db_password | default('jurl_prod_secret_pass_2026') }}"
-secret_key_base: "{{ vault_secret_key_base | default('6b177894a896d74ee51121d582b13c72b22579b940026e63eb8c3938562d9804e76a06652b0475253e7f4c0a59a930773d5733e8b0b9a89c7d4e5f6g7h8i9j0k') }}"
+db_password: "{{ vault_db_password | default('<your-db-password>') }}"
+secret_key_base: "{{ vault_secret_key_base | default('<generate-with-mix-phx-gen-secret>') }}"
 
 # Phoenix Application Settings
 app_name: "jurl"

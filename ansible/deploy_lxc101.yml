@@ -12,7 +12,7 @@
     env_file: "/etc/jurl/jurl.env"
     db_host: "192.168.1.20"
     db_user: "jurl"
-    db_pass: "jurl_prod_secret_pass_2026"
+    db_pass: "{{ vault_db_password | default('<your-db-password>') }}"
     app_ip: "192.168.1.21"
     app_port: 4000
     project_root: "{{ playbook_dir }}/.."

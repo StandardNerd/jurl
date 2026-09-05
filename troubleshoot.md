@@ -38,7 +38,7 @@ This document details the diagnosis, resolution steps, and architectural rationa
 ## 3. Step-by-Step Resolution & Rationale
 
 ### Step 3.1: PostgreSQL Configuration & User Credentials (CT 102)
-- **Action**: Verified `listen_addresses = '*'` in `postgresql.conf` and explicitly reset user `jurl` password to match production environment settings (`jurl_prod_secret_pass_2026`).
+- **Action**: Verified `listen_addresses = '*'` in `postgresql.conf` and explicitly reset user `jurl` password to match production environment settings (`<your-db-password>`).
 - **Rationale**: Ensures the database server accepts external connections from CT 101 and guarantees password authentication parity with the application connection URI.
 
 ### Step 3.2: Application Build Environment Upgrade (CT 101)
@@ -110,7 +110,7 @@ Whenever application code is updated, deploy the changes to CT 101 using one of 
 From your control machine or workspace:
 ```bash
 cd ansible
-ansible-playbook -i inventory.ini playbook.yml --tags redeploy --extra-vars "ansible_ssh_pass=dexter33143"
+ansible-playbook -i inventory.ini playbook.yml --tags redeploy --extra-vars "ansible_ssh_pass=<your-ssh-password>"
 ```
 
 ### Method B: Direct Proxmox Host CLI Deployment

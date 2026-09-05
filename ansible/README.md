@@ -44,11 +44,11 @@ brew install ansible sshpass
 
 ### Running the Playbook
 
-Execute the playbook against the Proxmox host (`192.168.1.19`), passing the root SSH password (`dexter33143`):
+Execute the playbook against the Proxmox host (`192.168.1.19`), passing the root SSH password (`<your-ssh-password>`):
 
 ```bash
 cd ansible
-ansible-playbook -i inventory.ini playbook.yml --extra-vars "ansible_ssh_pass=dexter33143"
+ansible-playbook -i inventory.ini playbook.yml --extra-vars "ansible_ssh_pass=<your-ssh-password>"
 ```
 
 ### Customizing Passwords & Secrets
@@ -57,7 +57,7 @@ To override default database passwords or secret keys, pass extra variables or u
 
 ```bash
 ansible-playbook -i inventory.ini playbook.yml \
-  --extra-vars "ansible_ssh_pass=dexter33143 db_password=MyCustomSecurePassword secret_key_base=$(mix phx.gen.secret)"
+  --extra-vars "ansible_ssh_pass=<your-ssh-password> db_password=<your-db-password> secret_key_base=$(mix phx.gen.secret)"
 ```
 
 ### Redeploying Updated Code to CT 101
@@ -65,7 +65,7 @@ ansible-playbook -i inventory.ini playbook.yml \
 To sync code changes and rebuild the Phoenix release without re-creating containers or reinstalling base packages:
 
 ```bash
-ansible-playbook -i inventory.ini playbook.yml --tags redeploy --extra-vars "ansible_ssh_pass=dexter33143"
+ansible-playbook -i inventory.ini playbook.yml --tags redeploy --extra-vars "ansible_ssh_pass=<your-ssh-password>"
 ```
 
 ---
@@ -88,8 +88,8 @@ After playbook completion, verify the deployment:
 curl -I http://192.168.1.21
 
 # Check Phoenix app systemd status via Proxmox
-sshpass -p 'dexter33143' ssh root@192.168.1.19 "pct exec 101 -- systemctl status jurl"
+sshpass -p '<your-ssh-password>' ssh root@192.168.1.19 "pct exec 101 -- systemctl status jurl"
 
 # Check PostgreSQL connection from App container to DB container
-sshpass -p 'dexter33143' ssh root@192.168.1.19 "pct exec 101 -- nc -zv 192.168.1.20 5432"
+sshpass -p '<your-ssh-password>' ssh root@192.168.1.19 "pct exec 101 -- nc -zv 192.168.1.20 5432"
 ```
