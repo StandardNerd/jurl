@@ -2,7 +2,7 @@
 
 ![screenshot](./docs/image.png)
 
-A self-hosted URL shortener built for my family and running on a private Proxmox server in my home network. It generates ultra-short, 3-character alphanumeric codes so links are effortless to remember and dictate aloud—such as sharing photo albums with other parents from my daughter's kindergarten.
+A self-hosted URL shortener built for my family and running on a private Proxmox server in my home network. It generates ultra-short, 3-character alphanumeric codes so links are effortless to remember, dictate aloud and to print — for example, sharing photo albums with other parents from my daughter's kindergarten.
 
 <p align="center">
   <strong>High-performance, real-time, privacy-friendly URL shortener built with Elixir and Phoenix LiveView.</strong>
