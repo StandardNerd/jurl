@@ -1,6 +1,7 @@
 defmodule JurlWeb.RedirectController do
   use JurlWeb, :controller
   import Phoenix.Controller, except: [redirect: 2]
+  import Ecto.Query, only: [from: 2]
 
   alias Jurl.Repo
   alias Jurl.Shortener.Link
@@ -8,7 +9,9 @@ defmodule JurlWeb.RedirectController do
   alias Jurl.Analytics.ClickProcessor
 
   def redirect(conn, %{"short_code" => short_code}) do
-    case resolve_url(short_code) do
+    # Stored codes are always lowercase; normalize so custom codes resolve
+    # regardless of how the visitor typed them.
+    case resolve_url(String.downcase(short_code)) do
       {:ok, url, link} ->
         # Fire-and-forget click tracking
         track_click_async(link, conn)
@@ -37,8 +40,11 @@ defmodule JurlWeb.RedirectController do
         {:ok, url, %{id: link_id}}
 
       {:error, :not_found} ->
-        # Cache miss - check database
-        case Repo.get_by(Link, short_code: short_code, is_active: true) do
+        # Cache miss - check database (case-insensitive, matches the
+        # lower(short_code) unique index)
+        case Repo.one(from l in Link,
+               where: fragment("lower(?)", l.short_code) == ^short_code and l.is_active == true
+             ) do
           %Link{expires_at: expires} = link when not is_nil(expires) ->
             if DateTime.compare(expires, DateTime.utc_now()) == :gt do
               URLCache.put_url(short_code, link.original_url, link.id)

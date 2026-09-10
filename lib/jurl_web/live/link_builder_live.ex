@@ -63,6 +63,30 @@ defmodule JurlWeb.LinkBuilderLive do
               </div>
             </div>
 
+            <div>
+              <label for="custom_alias" class="block text-xs font-bold uppercase tracking-wider text-ink mb-1">
+                <%= gettext("Custom code (optional)") %>
+              </label>
+              <div class="mt-1 flex items-center gap-2">
+                <span class="text-xs text-faded font-mono whitespace-nowrap">
+                  <%= JurlWeb.Endpoint.url() %>/
+                </span>
+                <input
+                  type="text"
+                  name="custom_alias"
+                  id="custom_alias"
+                  value={@custom_alias}
+                  placeholder="house12"
+                  maxlength="32"
+                  pattern="[A-Za-z0-9_-]+"
+                  class="block w-full rounded-md border-line bg-base shadow-sm focus:border-accent focus:ring-accent text-ink placeholder-faded/60 text-sm font-mono"
+                />
+              </div>
+              <p class="mt-1 text-[10px] text-faded">
+                <%= gettext("3–32 characters: letters, numbers, hyphens, underscores. Leave blank for a random code.") %>
+              </p>
+            </div>
+
             <%= if @error do %>
               <div class="rounded-md bg-red-50 p-4 border border-red-200">
                 <p class="text-sm text-red-800"><%= @error %></p>
@@ -223,7 +247,11 @@ defmodule JurlWeb.LinkBuilderLive do
             end)
             |> Enum.join(", ")
 
-          {:noreply, assign(socket, :error, error_msg)}
+          {:noreply,
+           socket
+           |> assign(:error, error_msg)
+           |> assign(:url_input, url)
+           |> assign(:custom_alias, custom_alias || "")}
 
         {:error, reason} when is_binary(reason) ->
           {:noreply, assign(socket, :error, reason)}

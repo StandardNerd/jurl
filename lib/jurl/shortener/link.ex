@@ -1,6 +1,7 @@
 defmodule Jurl.Shortener.Link do
   use Ecto.Schema
   import Ecto.Changeset
+  import Ecto.Query
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
@@ -31,17 +32,35 @@ defmodule Jurl.Shortener.Link do
   @required_fields [:original_url]
   @optional_fields [:custom_alias, :password_hash, :expires_at, :title, :description]
 
+  @custom_code_format ~r/^[a-zA-Z0-9_-]+$/
+
+  # Short codes live at the root path (/:short_code), so a custom code must
+  # never shadow an existing app route.
+  @reserved_codes ~w[
+    admin api new login logout register dashboard links users user
+    dev graphql health healthz status metrics assets images static
+    settings account sessions session
+  ]
+
   def changeset(link, attrs) do
     link
     |> cast(attrs, @required_fields ++ @optional_fields ++ [:anonymous_id, :user_id, :is_active, :click_count, :owner_type])
     |> validate_required(@required_fields)
     |> validate_url(:original_url)
+    |> normalize_custom_alias()
+    |> validate_format(:custom_alias, @custom_code_format,
+      message: "may only contain letters, numbers, hyphens and underscores"
+    )
+    |> validate_length(:custom_alias, min: 3, max: 32)
+    |> validate_exclusion(:custom_alias, @reserved_codes, message: "is reserved")
     |> generate_short_code()
     |> validate_unique_short_code()
     |> hash_password()
     |> validate_expiry()
-    |> unique_constraint(:short_code)
-    |> unique_constraint(:custom_alias)
+    |> unique_constraint(:short_code,
+      name: "links_short_code_lower_unique_index",
+      message: "has already been taken"
+    )
   end
 
   defp validate_url(changeset, field) do
@@ -51,6 +70,17 @@ defmodule Jurl.Shortener.Link do
         _ -> [{field, "Must be a valid HTTP or HTTPS URL"}]
       end
     end)
+  end
+
+  defp normalize_custom_alias(changeset) do
+    case get_change(changeset, :custom_alias) do
+      code when is_binary(code) ->
+        code = code |> String.trim() |> String.downcase()
+        put_change(changeset, :custom_alias, if(code == "", do: nil, else: code))
+
+      _ ->
+        changeset
+    end
   end
 
   defp generate_short_code(changeset) do
@@ -69,9 +99,23 @@ defmodule Jurl.Shortener.Link do
     end
   end
 
+  # Codes are unique case-insensitively: stored short codes are always
+  # lowercase (the generator only emits lowercase and custom codes are
+  # downcased above), so compare lower(short_code) to the downcased change.
   defp validate_unique_short_code(changeset) do
-    changeset
-    |> unsafe_validate_unique(:short_code, Jurl.Repo)
+    case get_change(changeset, :short_code) do
+      code when is_binary(code) ->
+        unsafe_validate_unique(changeset, [:short_code], Jurl.Repo,
+          query:
+            from(l in __MODULE__,
+              where: fragment("lower(?)", l.short_code) == ^String.downcase(code)
+            ),
+          message: "has already been taken"
+        )
+
+      _ ->
+        changeset
+    end
   end
 
   defp hash_password(changeset) do

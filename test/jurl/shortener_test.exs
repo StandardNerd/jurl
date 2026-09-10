@@ -73,6 +73,63 @@ defmodule Jurl.ShortenerTest do
     end
   end
 
+  describe "custom codes" do
+    test "creates link with a valid custom code" do
+      identity = Identity.new_anonymous("custom_ok")
+      {:ok, link} = Shortener.create_link(identity, %{
+        original_url: "https://example.com",
+        custom_alias: "house12"
+      })
+
+      assert link.short_code == "house12"
+      assert link.custom_alias == "house12"
+    end
+
+    test "rejects duplicate custom code with friendly field error" do
+      id1 = Identity.new_anonymous("custom_dup_1")
+      {:ok, _} = Shortener.create_link(id1, %{
+        original_url: "https://example.com",
+        custom_alias: "taken123"
+      })
+
+      id2 = Identity.new_anonymous("custom_dup_2")
+      assert {:error, %Ecto.Changeset{} = changeset} =
+               Shortener.create_link(id2, %{
+                 original_url: "https://example.com",
+                 custom_alias: "taken123"
+               })
+
+      assert errors_on(changeset).custom_alias == ["has already been taken"]
+    end
+
+    test "race: two same-custom-code inserts result in one success and one error" do
+      identity = Identity.new_anonymous("custom_race")
+
+      results = [
+        Shortener.create_link(identity, %{
+          original_url: "https://example.com",
+          custom_alias: "race_code"
+        }),
+        Shortener.create_link(identity, %{
+          original_url: "https://example.com",
+          custom_alias: "race_code"
+        })
+      ]
+
+      oks = Enum.filter(results, &match?({:ok, _}, &1))
+      errors = Enum.flat_map(results, fn
+        {:ok, _} -> []
+        {:error, %Ecto.Changeset{} = cs} -> [cs]
+      end)
+
+      assert length(oks) == 1
+      assert length(errors) == 1
+      # The DB unique index caught the second insert; the error is presented
+      # on custom_alias since that is the field the user typed
+      assert errors_on(hd(errors)).custom_alias == ["has already been taken"]
+    end
+  end
+
   describe "deactivate_link/1" do
     test "deactivates link" do
       identity = Identity.new_anonymous("deactivate_anon")

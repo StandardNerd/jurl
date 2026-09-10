@@ -27,4 +27,9 @@ defmodule JurlWeb.RedirectControllerTest do
     conn = get(conn, ~p"/#{expired_link.short_code}")
     assert json_response(conn, 410)["error"] == "Link has expired"
   end
+
+  test "redirects custom codes case-insensitively", %{conn: conn} do
+    conn = get(conn, ~p"/REDIR123")
+    assert redirected_to(conn) == "https://example.com/target"
+  end
 end

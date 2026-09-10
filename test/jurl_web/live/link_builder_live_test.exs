@@ -74,4 +74,61 @@ defmodule JurlWeb.LinkBuilderLiveTest do
       assert html =~ ~s(phx-value-text="#{short_url}")
     end
   end
+
+  describe "custom short codes" do
+    test "renders the custom code input", %{conn: conn} do
+      {:ok, _view, html} = live(conn, ~p"/")
+      assert html =~ "Custom code"
+      assert html =~ ~s(name="custom_alias")
+    end
+
+    test "creates a link with a custom code", %{conn: conn} do
+      {:ok, view, _html} = live(conn, ~p"/")
+
+      html =
+        view
+        |> form("form[phx-submit=\"shorten\"]", url: "https://example.com/house", custom_alias: "house12")
+        |> render_submit()
+
+      assert html =~ "/house12"
+      assert Jurl.Repo.get_by(Jurl.Shortener.Link, short_code: "house12")
+    end
+
+    test "shows inline error when the custom code is taken", %{conn: conn} do
+      {:ok, view, _html} = live(conn, ~p"/")
+
+      view
+      |> form("form[phx-submit=\"shorten\"]", url: "https://example.com", custom_alias: "taken12")
+      |> render_submit()
+
+      html =
+        view
+        |> form("form[phx-submit=\"shorten\"]", url: "https://example.com/other", custom_alias: "taken12")
+        |> render_submit()
+
+      assert html =~ "has already been taken"
+    end
+
+    test "shows inline error for invalid characters", %{conn: conn} do
+      {:ok, view, _html} = live(conn, ~p"/")
+
+      html =
+        view
+        |> form("form[phx-submit=\"shorten\"]", url: "https://example.com", custom_alias: "bad code!")
+        |> render_submit()
+
+      assert html =~ "letters, numbers, hyphens and underscores"
+    end
+
+    test "shows inline error for reserved words", %{conn: conn} do
+      {:ok, view, _html} = live(conn, ~p"/")
+
+      html =
+        view
+        |> form("form[phx-submit=\"shorten\"]", url: "https://example.com", custom_alias: "admin")
+        |> render_submit()
+
+      assert html =~ "is reserved"
+    end
+  end
 end

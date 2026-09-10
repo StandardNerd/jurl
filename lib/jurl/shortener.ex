@@ -61,7 +61,12 @@ defmodule Jurl.Shortener do
         Limiter.increment_link_count(anonymous_id)
         SessionStore.add_link(anonymous_id, link.short_code)
         {:ok, link}
-      error -> error
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:error, remap_short_code_errors(changeset)}
+
+      error ->
+        error
     end
   end
 
@@ -77,9 +82,30 @@ defmodule Jurl.Shortener do
       {:ok, link} ->
         broadcast_link_created(link)
         {:ok, link}
-      error -> error
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:error, remap_short_code_errors(changeset)}
+
+      error ->
+        error
     end
   end
+
+  # Custom codes are stored in short_code, so the DB unique constraint reports
+  # conflicts against short_code even when the race was between two custom
+  # codes. Present the error on custom_alias instead, which is the field the
+  # user actually typed.
+  defp remap_short_code_errors(%Ecto.Changeset{changes: %{custom_alias: _}} = changeset) do
+    errors =
+      Enum.map(changeset.errors, fn
+        {:short_code, error} -> {:custom_alias, error}
+        other -> other
+      end)
+
+    %{changeset | errors: errors}
+  end
+
+  defp remap_short_code_errors(changeset), do: changeset
 
   def list_links_for_identity(context, params \\ %{}) do
     identity = get_identity(context)
