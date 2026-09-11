@@ -22,4 +22,15 @@ defmodule JurlWeb.PrintControllerTest do
     assert html =~ "grid-template-columns: repeat(3, 1fr)"
     assert html =~ "grid-template-rows: repeat(20, 1fr)"
   end
+
+  test "language selector is rendered for screen but hidden from print output", %{conn: conn, link: link} do
+    conn = get(conn, ~p"/links/#{link.short_code}/print")
+    html = html_response(conn, 200)
+
+    # The selector still renders on screen (root layout wraps the print page)
+    assert html =~ ~s(id="locale-form")
+
+    # But the nav containing it is excluded by the print stylesheet
+    assert html =~ ~r/@media print.*?#top-nav[^}]*display:\s*none\s*!important/s
+  end
 end

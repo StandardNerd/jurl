@@ -21,7 +21,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   </head>
   <body class="bg-base text-ink font-sans antialiased pb-12">
-    <ul class="relative z-10 flex items-center gap-4 px-4 sm:px-6 lg:px-8 justify-end pt-4 font-medium text-xs">
+    <ul id="top-nav" class="relative z-10 flex items-center gap-4 px-4 sm:px-6 lg:px-8 justify-end pt-4 font-medium text-xs">
       <%= if assigns[:current_user] do %>
         <li class="text-xs leading-5 text-zinc-600">
           <%= @current_user.email %>
